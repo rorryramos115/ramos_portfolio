@@ -4,6 +4,7 @@ export type Project = {
   year: string;
   role: string;
   description: string;
+  highlights?: string[];
   tags: string[];
   color: string;
   image: string; // TODO: replace placeholder with real screenshot
@@ -28,16 +29,21 @@ export const projects: Project[] = [
     githubUrl: GITHUB,
   },
   {
-    id: "prepwise",
-    title: "PrepWise",
-    year: "2025",
+    id: "preptalk",
+    title: "PrepTalk",
+    year: "2026",
     role: "Full-stack engineer",
     description:
-      "An AI-powered mock interview platform — practice job interviews with a voice AI agent that asks questions and gives feedback in real time.",
-    tags: ["Next.js", "Vapi", "Firebase"],
+      "An AI mock-interview app — practice realistic interviews with an AI interviewer and get instant feedback on every answer.",
+    highlights: [
+      "Realistic mock interviews with an AI interviewer",
+      "Instant feedback on every answer",
+      "Live clarity and structure scores while you practice",
+    ],
+    tags: ["Next.js", "Vapi", "Gemini", "Supabase"],
     color: "265 45% 55%",
-    image: "/projects/interview-gpt.png",
-    liveUrl: "https://interview-gpt-mu.vercel.app/",
+    image: "/projects/PrepTalk.png",
+    liveUrl: "https://prep-talk-interviewer.vercel.app/",
     githubUrl: GITHUB,
   },
   {

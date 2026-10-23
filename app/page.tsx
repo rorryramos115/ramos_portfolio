@@ -1,7 +1,7 @@
 import { Navbar } from "@/components/navbar";
 import { Hero } from "@/components/hero";
 import { BentoAbout } from "@/components/bento-about";
-import { Education } from "@/components/education";
+import { Certifications } from "@/components/certifications";
 import { ProjectCarousel } from "@/components/project-carousel";
 import { Contact } from "@/components/contact";
 import { Footer } from "@/components/footer";
@@ -14,7 +14,7 @@ export default function Home() {
         <Hero />
         <BentoAbout />
         <ProjectCarousel />
-        <Education />
+        <Certifications />
         <Contact />
       </main>
       <Footer />

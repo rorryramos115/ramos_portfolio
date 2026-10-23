@@ -90,6 +90,14 @@ export function ProjectModal({
               {project.description}
             </p>
 
+            {project.highlights && project.highlights.length > 0 && (
+              <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
+                {project.highlights.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+
             <div className="mt-6 flex flex-wrap gap-2">
               {project.tags.map((tag) => (
                 <span
