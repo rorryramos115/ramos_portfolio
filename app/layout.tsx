@@ -1,32 +1,24 @@
-import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 
-import { ThemeProvider } from "@/components/theme-provider";
+// Self-hosted variable fonts (no runtime/build-time Google Fonts fetch).
+import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+
+import { Preloader } from "@/components/preloader";
+import { SmoothScroll } from "@/components/providers/smooth-scroll";
+import { SceneBackground } from "@/components/three/scene-background";
 import "./globals.css";
-
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display",
-  axes: ["opsz", "SOFT", "WONK"],
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Rorry Ramos — Full-Stack Developer",
   description:
     "Portfolio of Rorry Ramos, a full-stack developer building modern web applications with Next.js, React, and Supabase.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#06060a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -35,13 +27,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}
-      >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-        </ThemeProvider>
+    <html
+      lang="en"
+      data-loading="true"
+      suppressHydrationWarning
+    >
+      <body>
+        {/* Without JS the preloader would never finish — don't trap the page. */}
+        <noscript>
+          <style>{`#preloader{display:none!important}html[data-loading]{overflow:auto!important}`}</style>
+        </noscript>
+        <a href="#content" className="skip-link">
+          Skip to content
+        </a>
+        <SmoothScroll />
+        <Preloader />
+        <SceneBackground />
+        {children}
       </body>
     </html>
   );

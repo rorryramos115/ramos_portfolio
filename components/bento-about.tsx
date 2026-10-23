@@ -1,12 +1,13 @@
 "use client";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { NumberOdometer } from "@/components/number-odometer";
+import { Reveal } from "@/components/reveal";
+import { SafeImage } from "@/components/safe-image";
+import { SectionHeading } from "@/components/section-heading";
+import { Tilt, TiltLayer } from "@/components/tilt";
+import { cn } from "@/lib/utils";
 
 type Skill = {
   name: string;
@@ -27,61 +28,55 @@ const skills: Skill[] = [
 
 function SkillIcon({ name, src }: Skill) {
   return (
-    <div className="group flex w-28 flex-none flex-col items-center gap-2.5">
-      <div className="relative flex h-14 w-14 items-center justify-center">
-        {/* soft glow so dark-colored svgs stay visible in dark mode */}
-        <div className="absolute inset-0 rounded-full bg-white/0 blur-md transition-colors dark:bg-white/10" />
-        <Image
+    <div className="group flex w-28 flex-none flex-col items-center gap-3">
+      <div className="glass relative flex h-16 w-16 items-center justify-center rounded-2xl transition-transform duration-500 ease-out-expo group-hover:-translate-y-1.5 group-hover:scale-110 group-hover:border-accent/40">
+        {/* soft light behind the glyph so dark-coloured svgs stay visible */}
+        <div className="absolute inset-2 rounded-xl bg-white/10 blur-md" />
+        <SafeImage
           src={src}
           alt={name}
           width={50}
           height={50}
-          className={cn(
-            "relative h-10 w-10 shrink-0 object-contain",
-            "drop-shadow-[0_0_0_rgba(0,0,0,0)] dark:drop-shadow-[0_0_6px_rgba(255,255,255,0.35)]",
-            "transition-transform duration-300 group-hover:scale-110"
-          )}
+          className="relative h-9 w-9 shrink-0 object-contain drop-shadow-[0_0_6px_rgba(255,255,255,0.35)]"
+          fallback={
+            <span
+              aria-hidden
+              className="relative font-display text-xl font-semibold text-accent"
+            >
+              {name.charAt(0)}
+            </span>
+          }
         />
       </div>
-      <span className="text-sm font-medium text-muted-foreground">{name}</span>
+      <span className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+        {name}
+      </span>
     </div>
   );
 }
 
 function SkillsMarquee() {
-  // duplicate the row so the loop is seamless
-  const loop = [...skills, ...skills];
-
   return (
-    <div className="mt-20">
-      <p className="mb-6 text-center text-base font-medium text-muted-foreground">
+    <div className="mt-24">
+      <p className="mb-8 text-center text-base font-medium text-muted-foreground">
         Tools & technologies I work with
       </p>
-      <div className="relative overflow-hidden">
-        {/* edge fade so icons don't hard-cut at the container edges */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
-
-        <div className="flex w-max animate-skills-marquee gap-10 py-3 hover:[animation-play-state:paused]">
-          {loop.map((skill, i) => (
-            <SkillIcon key={`${skill.name}-${i}`} {...skill} />
+      <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+        <div className="flex w-max animate-marquee gap-10 py-3 hover:[animation-play-state:paused] focus-within:[animation-play-state:paused] motion-reduce:w-full motion-reduce:animate-none motion-reduce:flex-wrap motion-reduce:justify-center">
+          {skills.map((skill) => (
+            <SkillIcon key={skill.name} {...skill} />
           ))}
+          {/* duplicate row for a seamless loop; hidden from AT and when motion is reduced */}
+          <div
+            aria-hidden
+            className="flex gap-10 motion-reduce:hidden"
+          >
+            {skills.map((skill) => (
+              <SkillIcon key={`dup-${skill.name}`} {...skill} />
+            ))}
+          </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes skills-marquee {
-          from {
-            transform: translateX(0);
-          }
-          to {
-            transform: translateX(-50%);
-          }
-        }
-        .animate-skills-marquee {
-          animation: skills-marquee 25s linear infinite;
-        }
-      `}</style>
     </div>
   );
 }
@@ -94,31 +89,21 @@ function Tile({
   children: React.ReactNode;
 }) {
   return (
-    <Card
-      className={cn(
-        "flex flex-col justify-between overflow-hidden p-5 transition-colors hover:border-accent/40",
-        className
-      )}
-    >
-      {children}
-    </Card>
+    <Tilt max={7} scale={1.025} className={cn("rounded-3xl", className)}>
+      <div className="glass flex h-full min-h-40 flex-col justify-between overflow-hidden rounded-3xl p-6 transition-colors duration-300 hover:border-accent/30">
+        <TiltLayer depth={8} className="flex h-full flex-col justify-between gap-6">
+          {children}
+        </TiltLayer>
+      </div>
+    </Tilt>
   );
 }
 
 export function BentoAbout() {
   return (
-    <section id="about" className="container py-24 sm:py-32">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5 }}
-        className="mb-10"
-      >
-        <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
-          About
-        </h2>
-        <p className="mt-4 max-w-3xl text-lg leading-relaxed text-muted-foreground">
+    <section id="about" className="container py-28 sm:py-40">
+      <SectionHeading index="01" title="About" className="mb-14">
+        <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">
           Full-Stack Developer specializing in building high-performance web and
           mobile applications using React, Next.js, and Supabase. Experienced in
           crafting seamless user interfaces, designing scalable APIs, and
@@ -126,15 +111,20 @@ export function BentoAbout() {
           build reliable, user-centered software that solves real-world
           operational and user challenges at scale.
         </p>
-      </motion.div>
+      </SectionHeading>
 
-      <div className="grid auto-rows-[minmax(140px,auto)] grid-cols-1 gap-4 sm:grid-cols-4">
+      <Reveal
+        stagger={0.12}
+        className="grid auto-rows-[minmax(160px,auto)] grid-cols-1 gap-5 sm:grid-cols-4"
+      >
         <Tile className="sm:col-span-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="h-4 w-4 text-accent" />
             Based in
           </div>
-          <p className="font-display text-2xl">Alubijid, Misamis Oriental, PH</p>
+          <p className="font-display text-2xl font-medium">
+            Alubijid, Misamis Oriental, PH
+          </p>
           <p className="text-sm text-muted-foreground">
             GMT+8 · working async-friendly hours
           </p>
@@ -142,20 +132,22 @@ export function BentoAbout() {
 
         <Tile>
           <p className="text-sm text-muted-foreground">Years</p>
-          <p className="font-display text-4xl">
+          <p className="text-gradient-accent font-display text-6xl font-semibold">
             <NumberOdometer value={3} suffix="+" delay={0.1} />
           </p>
         </Tile>
 
         <Tile>
           <p className="text-sm text-muted-foreground">Projects</p>
-          <p className="font-display text-4xl">
+          <p className="text-gradient-accent font-display text-6xl font-semibold">
             <NumberOdometer value={51} delay={0.25} />
           </p>
         </Tile>
-      </div>
+      </Reveal>
 
-      <SkillsMarquee />
+      <Reveal>
+        <SkillsMarquee />
+      </Reveal>
     </section>
   );
 }

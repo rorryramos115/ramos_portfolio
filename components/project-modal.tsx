@@ -1,11 +1,20 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, Github, X } from "lucide-react";
+import { ArrowUpRight, X } from "lucide-react";
 
+import { GithubIcon } from "@/components/brand-icons";
+import { SafeImage } from "@/components/safe-image";
+import { Tilt } from "@/components/tilt";
 import { type Project } from "@/lib/data";
+import { getLenis } from "@/lib/lenis";
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+const subscribeNoop = () => () => {};
 
 export function ProjectModal({
   project,
@@ -14,128 +23,189 @@ export function ProjectModal({
   project: Project | null;
   onClose: () => void;
 }) {
+  const isClient = React.useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false
+  );
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+  const closeRef = React.useRef<HTMLButtonElement>(null);
+  const onCloseRef = React.useRef(onClose);
+
   React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    onCloseRef.current = onClose;
+  });
+
+  const isOpen = project !== null;
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    getLenis()?.stop();
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const items = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)
+      );
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
-    if (project) {
-      document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", handleKeyDown);
-    }
+    window.addEventListener("keydown", onKeyDown);
+
     return () => {
-      document.body.style.overflow = "unset";
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+      getLenis()?.start();
+      previouslyFocused?.focus?.();
     };
-  }, [project, onClose]);
+  }, [isOpen]);
 
-  if (!project) return null;
+  if (!isClient) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm"
-        />
-
-        {/* Modal Container */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          transition={{ duration: 0.2 }}
-          className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-white p-6 shadow-2xl dark:bg-card sm:p-8"
+      {project && (
+        <div
+          key={project.id}
+          className="fixed inset-0 z-90 flex items-center justify-center p-4 sm:p-6"
         >
-          <button
-            type="button"
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
             onClick={onClose}
-            className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/10 text-black/50 transition-all hover:bg-black/20 hover:text-black/80 dark:bg-white/10 dark:text-white/50 dark:hover:bg-white/20 dark:hover:text-white/90"
-            aria-label="Close modal"
+            aria-hidden
+            className="fixed inset-0 bg-black/75 backdrop-blur-md"
+          />
+
+          {/* Modal container */}
+          <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="project-modal-title"
+            data-lenis-prevent
+            initial={{ opacity: 0, scale: 0.92, y: 40, rotateX: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 24 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            style={{ transformPerspective: 1200 }}
+            className="relative z-10 max-h-[90svh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/10 bg-[#0b0b11]/90 p-6 shadow-[0_40px_120px_-20px_rgb(0_0_0/0.9),0_0_0_1px_rgb(198_255_61/0.08)] backdrop-blur-2xl sm:p-8"
           >
-            <X className="h-4 w-4" />
-          </button>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={onClose}
+              className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/80 backdrop-blur transition-all hover:bg-accent hover:text-accent-foreground"
+              aria-label="Close modal"
+            >
+              <X className="h-4 w-4" />
+            </button>
 
-          <div
-            className="relative h-60 w-full overflow-hidden rounded-lg sm:h-80"
-            style={{
-              background: `linear-gradient(155deg, hsl(${project.color} / 0.9), hsl(${project.color} / 0.55))`,
-            }}
-          >
-            <Image
-              src={project.image}
-              alt={`${project.title} preview`}
-              fill
-              className="object-cover"
-            />
-          </div>
+            <Tilt max={4} scale={1} glare={false} className="rounded-2xl">
+              <div
+                className="relative h-60 w-full overflow-hidden rounded-2xl sm:h-80"
+                style={{
+                  background: `linear-gradient(155deg, hsl(${project.color} / 0.9), hsl(${project.color} / 0.45))`,
+                }}
+              >
+                <SafeImage
+                  src={project.image}
+                  alt={`${project.title} preview`}
+                  fill
+                  sizes="(min-width: 672px) 640px, 90vw"
+                  className="object-cover"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+            </Tilt>
 
-          <div className="mt-6">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-display text-2xl sm:text-3xl">
-                {project.title}
-              </h2>
-              <span className="font-mono text-sm text-muted-foreground">
-                {project.year}
-              </span>
-            </div>
-            <p className="mt-1 text-sm font-medium text-accent">
-              {project.role}
-            </p>
-
-            <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-              {project.description}
-            </p>
-
-            {project.highlights && project.highlights.length > 0 && (
-              <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground">
-                {project.highlights.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            )}
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              {project.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-md border border-border bg-muted/40 px-2.5 py-1 font-mono text-xs text-muted-foreground"
+            <div className="mt-6">
+              <div className="flex items-center justify-between gap-2">
+                <h2
+                  id="project-modal-title"
+                  className="font-display text-2xl font-semibold sm:text-3xl"
                 >
-                  {tag}
+                  {project.title}
+                </h2>
+                <span className="font-mono text-sm text-muted-foreground">
+                  {project.year}
                 </span>
-              ))}
-            </div>
+              </div>
+              <p className="mt-1 text-sm font-medium text-accent">
+                {project.role}
+              </p>
 
-            <div className="mt-8 flex items-center gap-4">
-              {project.liveUrl && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90"
-                >
-                  Live site
-                  <ArrowUpRight className="h-4 w-4" />
-                </a>
+              <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+                {project.description}
+              </p>
+
+              {project.highlights && project.highlights.length > 0 && (
+                <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-relaxed text-muted-foreground marker:text-accent">
+                  {project.highlights.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
               )}
-              {project.githubUrl && (
-                <a
-                  href={project.githubUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-                >
-                  <Github className="h-4 w-4" />
-                  Source code
-                </a>
-              )}
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-xs text-muted-foreground"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                {project.liveUrl && (
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground shadow-[0_10px_40px_-8px_rgb(198_255_61/0.55)] transition-shadow hover:shadow-[0_14px_60px_-6px_rgb(198_255_61/0.75)]"
+                  >
+                    Live site
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                )}
+                {project.githubUrl && (
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-accent/50 hover:text-foreground"
+                  >
+                    <GithubIcon className="h-4 w-4" />
+                    Source code
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
+    document.body
   );
 }

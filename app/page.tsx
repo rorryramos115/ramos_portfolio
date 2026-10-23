@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main>
+      <main id="content" className="relative z-10">
         <Hero />
         <BentoAbout />
         <ProjectCarousel />

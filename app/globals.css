@@ -1,92 +1,305 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 80 15% 93%;
-    --foreground: 25 25% 11%;
+/* ------------------------------------------------------------------ */
+/*  Design tokens — dark only, one bold accent (electric lime)         */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-background: #06060a;
+  --color-foreground: #f3f3f7;
 
-    --card: 70 18% 96%;
-    --card-foreground: 25 25% 11%;
+  --color-card: #0d0d14;
+  --color-card-foreground: #f3f3f7;
 
-    --muted: 60 11% 88%;
-    --muted-foreground: 35 9% 40%;
+  --color-muted: #14141d;
+  --color-muted-foreground: #9d9db0;
 
-    --secondary: 60 11% 90%;
-    --secondary-foreground: 25 25% 11%;
+  --color-secondary: #14141d;
+  --color-secondary-foreground: #f3f3f7;
 
-    --accent: 35 65% 47%;
-    --accent-foreground: 40 35% 98%;
+  --color-accent: #c6ff3d;
+  --color-accent-foreground: #0b1000;
 
-    --destructive: 6 65% 45%;
-    --destructive-foreground: 40 35% 98%;
+  --color-destructive: #ff5c5c;
+  --color-destructive-foreground: #ffffff;
 
-    --border: 52 13% 82%;
-    --input: 52 13% 82%;
-    --ring: 35 65% 47%;
+  --color-border: rgb(255 255 255 / 0.1);
+  --color-input: rgb(255 255 255 / 0.12);
+  --color-ring: #c6ff3d;
 
-    --radius: 0.6rem;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-orb: orb-spin 40s linear infinite;
+  --animate-orb-float: orb-float 9s ease-in-out infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
-
-  .dark {
-    --background: 24 22% 7%;
-    --foreground: 42 22% 92%;
-
-    --card: 24 19% 10%;
-    --card-foreground: 42 22% 92%;
-
-    --muted: 24 13% 15%;
-    --muted-foreground: 40 10% 62%;
-
-    --secondary: 24 13% 14%;
-    --secondary-foreground: 42 22% 92%;
-
-    --accent: 33 68% 58%;
-    --accent-foreground: 24 30% 9%;
-
-    --destructive: 6 55% 50%;
-    --destructive-foreground: 40 35% 98%;
-
-    --border: 24 15% 18%;
-    --input: 24 15% 18%;
-    --ring: 33 68% 58%;
+  @keyframes orb-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes orb-float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(0, -3%, 0) scale(1.04);
+    }
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
   }
 }
 
+/* Families come from the self-hosted @fontsource-variable packages (see layout.tsx). */
+@theme {
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+}
+
+@utility container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  max-width: 1200px;
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
+/* Glassmorphism surface */
+@utility glass {
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.075),
+    rgb(255 255 255 / 0.02)
+  );
+  border: 1px solid rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 24px 60px -24px rgb(0 0 0 / 0.7);
+}
+
+/* Denser glass for surfaces that carry small text over the 3D scene */
+@utility glass-dense {
+  background: linear-gradient(
+    135deg,
+    rgb(14 14 22 / 0.78),
+    rgb(8 8 14 / 0.7)
+  );
+  border: 1px solid rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 30px 80px -24px rgb(0 0 0 / 0.8);
+}
+
+@utility text-gradient {
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 20%,
+    rgb(255 255 255 / 0.55) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility text-gradient-accent {
+  background-image: linear-gradient(100deg, #c6ff3d 10%, #7dffb3 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
 @layer base {
-  * {
-    @apply border-border;
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
   }
+
   html {
-    scroll-behavior: smooth;
+    color-scheme: dark;
+    background: var(--color-background);
   }
+
+  /* Pin the page while the preloader plays (removed from JS). */
+  html[data-loading="true"] {
+    overflow: hidden;
+  }
+
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    /* Static aurora wash behind everything (cheap: no animation, no blend). */
     background-image:
-      radial-gradient(circle at 1px 1px, hsl(var(--foreground) / 0.06) 1px, transparent 0);
-    background-size: 28px 28px;
+      radial-gradient(
+        60rem 40rem at 85% -10%,
+        rgb(198 255 61 / 0.07),
+        transparent 60%
+      ),
+      radial-gradient(
+        50rem 36rem at -10% 40%,
+        rgb(110 90 255 / 0.08),
+        transparent 60%
+      ),
+      radial-gradient(
+        55rem 40rem at 70% 110%,
+        rgb(60 200 255 / 0.06),
+        transparent 60%
+      );
+    background-attachment: fixed;
   }
+
   ::selection {
-    @apply bg-accent/25 text-foreground;
+    background: rgb(198 255 61 / 0.3);
+    color: #fff;
   }
+
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
+    outline: 2px solid var(--color-ring);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* Lenis recommended styles */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis:not(.lenis-autoToggle).lenis-stopped {
+    overflow: clip;
+  }
+  .lenis [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-smooth iframe {
+    pointer-events: none;
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* ------------------------------------------------------------------ */
+/*  Components                                                         */
+/* ------------------------------------------------------------------ */
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 200;
+  transform: translateY(-200%);
+  border-radius: 9999px;
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 0.2s var(--ease-out-expo);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Fixed fallback / base layer behind the WebGL canvas */
+.orb-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  right: -18vmin;
+  top: 50%;
+  width: 78vmin;
+  height: 78vmin;
+  margin-top: -39vmin;
+  border-radius: 9999px;
+  background:
+    radial-gradient(
+      circle at 32% 30%,
+      rgb(198 255 61 / 0.55),
+      rgb(198 255 61 / 0.08) 38%,
+      transparent 62%
+    ),
+    radial-gradient(
+      circle at 70% 72%,
+      rgb(110 90 255 / 0.45),
+      transparent 58%
+    );
+  filter: blur(8px);
+  opacity: 0.8;
+}
+.orb-ring {
+  position: absolute;
+  inset: 8%;
+  border-radius: 9999px;
+  border: 1px solid rgb(198 255 61 / 0.35);
+  animation: var(--animate-orb);
+}
+.orb-ring::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  box-shadow: 0 0 18px 4px rgb(198 255 61 / 0.6);
+}
+@media (max-width: 767px) {
+  .orb {
+    right: -30vmin;
+    width: 100vmin;
+    height: 100vmin;
+    margin-top: -50vmin;
+    opacity: 0.55;
   }
 }
 
+.caret {
+  animation: caret 0.9s steps(1) infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Reduced motion — kill CSS motion, keep layout                      */
+/* ------------------------------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .orb-ring,
+  .caret {
+    animation: none !important;
   }
 }

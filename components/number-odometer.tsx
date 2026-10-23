@@ -6,6 +6,7 @@ import {
   useInView,
   useMotionValue,
   useMotionValueEvent,
+  useReducedMotion,
   animate,
 } from "framer-motion";
 
@@ -25,11 +26,12 @@ export function NumberOdometer({
   value,
   suffix = "",
   prefix = "",
-  duration = 1.4,
+  duration = 1.6,
   className,
   delay = 0,
 }: NumberOdometerProps) {
   const ref = React.useRef<HTMLSpanElement>(null);
+  const reduce = useReducedMotion();
   const isInView = useInView(ref, { once: true, margin: "-40px" });
 
   const motionValue = useMotionValue(0);
@@ -40,7 +42,7 @@ export function NumberOdometer({
   });
 
   React.useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || reduce) return;
 
     const controls = animate(motionValue, value, {
       duration,
@@ -49,7 +51,7 @@ export function NumberOdometer({
     });
 
     return () => controls.stop();
-  }, [isInView, value, duration, delay, motionValue]);
+  }, [isInView, reduce, value, duration, delay, motionValue]);
 
   return (
     <motion.span
@@ -58,7 +60,7 @@ export function NumberOdometer({
       aria-label={`${prefix}${value}${suffix}`}
     >
       {prefix}
-      {display}
+      {reduce ? value : display}
       {suffix}
     </motion.span>
   );
