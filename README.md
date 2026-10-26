@@ -3,7 +3,7 @@
 A dark, cinematic, 3D portfolio built with Next.js 16 (App Router), React 19,
 Tailwind CSS 4, React Three Fiber, GSAP, Lenis and Framer Motion.
 
-Requires **Node.js 26** (`.nvmrc` is included).
+Targets **Node.js 24** (`.nvmrc` is included) — the newest version Vercel supports. Newer local versions work too, with an engines warning.
 
 ## Getting started
 
